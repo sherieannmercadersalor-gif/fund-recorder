@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anniversary Fund</title>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --surface-tint:#FFFBEA;
+    --grid:#EDE1AE;
+    --ink:#2B2410;
+    --ink-soft:#7A6E3E;
+    --yellow:#FFC72C;
+    --yellow-deep:#E0A800;
+    --yellow-pale:#FFF3C4;
+    --danger:#C0392B;
+    --overlay:rgba(43,36,16,0.45);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1E1B10;
+      --surface-tint:#2A2510;
+      --grid:#4A4222;
+      --ink:#F5EFD9;
+      --ink-soft:#C9BE8E;
+      --yellow:#E0B840;
+      --yellow-deep:#C79A2C;
+      --yellow-pale:#3A3319;
+      --danger:#E07A6C;
+      --overlay:rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1E1B10;
+    --surface-tint:#2A2510;
+    --grid:#4A4222;
+    --ink:#F5EFD9;
+    --ink-soft:#C9BE8E;
+    --yellow:#E0B840;
+    --yellow-deep:#C79A2C;
+    --yellow-pale:#3A3319;
+    --danger:#E07A6C;
+    --overlay:rgba(0,0,0,0.6);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--surface-tint);
+    color:var(--ink);
+    font-family:Calibri, 'Segoe UI', Arial, sans-serif;
+    font-size:13px;
+  }
+  .app{ max-width:720px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); }
+
+  .titlebar{
+    background:var(--yellow);
+    color:var(--ink);
+    padding:0.6rem 0.9rem;
+    display:flex;
+    align-items:baseline;
+    gap:0.5rem;
+  }
+  .titlebar .name{ font-weight:700; font-size:0.98rem; }
+  .titlebar .sub{ font-size:0.76rem; opacity:0.75; }
+
+  .sheet-container{ flex:1; overflow-x:auto; }
+  .sheet{ display:none; }
+  .sheet.active{ display:block; }
+
+  table{ border-collapse:collapse; width:100%; min-width:460px; }
+
+  th.row-head{
+    background:var(--surface-tint);
+    color:var(--ink-soft);
+    font-weight:400;
+    text-align:center;
+    width:2rem;
+    font-size:0.74rem;
+    border:1px solid var(--grid);
+  }
+  td{
+    border:1px solid var(--grid);
+    padding:0.45rem 0.6rem;
+    font-size:0.85rem;
+  }
+  tr.head-row td{
+    background:var(--yellow-pale);
+    font-weight:700;
+    color:var(--ink);
+  }
+  tr.subhead-row td{
+    background:var(--yellow-pale);
+    font-weight:700;
+    color:var(--ink);
+  }
+  td.num{ text-align:right; font-variant-numeric: tabular-nums; }
+  td.dim{ color:var(--ink-soft); text-align:right; }
+
+  .cell-inner{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:0.4rem;
+  }
+  .del-btn-inline{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    cursor:pointer;
+    font-size:0.72rem;
+    line-height:1;
+    padding:0.1rem 0.2rem;
+    opacity:0.6;
+  }
+  .del-btn-inline:hover{ color:var(--danger); opacity:1; }
+
+  .add-row td{ padding:0; }
+  .add-full-btn{
+    width:100%;
+    border:none;
+    background:var(--yellow);
+    color:var(--ink);
+    font-weight:700;
+    font-size:0.9rem;
+    padding:0.6rem 0;
+    cursor:pointer;
+  }
+  .add-full-btn:active{ background:var(--yellow-deep); }
+
+  /* Pill-style segmented switcher for Contributions / Summary,
+     intentionally not a spreadsheet-style tab strip. */
+  .tabbar{
+    display:flex;
+    gap:0.3rem;
+    background:var(--yellow-pale);
+    border-top:1px solid var(--grid);
+    padding:0.55rem 0.7rem;
+    border-radius:0;
+  }
+  .tab{
+    flex:1;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    font-size:0.85rem;
+    font-weight:600;
+    padding:0.5rem 0;
+    cursor:pointer;
+    border-radius:999px;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .tab.active{
+    background:var(--yellow);
+    color:var(--ink);
+    font-weight:700;
+    box-shadow:0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  .restart-wrap{ padding:0.9rem 0.9rem 1.2rem; }
+  .restart-btn{
+    width:100%;
+    border:1px solid var(--yellow-deep);
+    background:var(--yellow-pale);
+    color:var(--ink);
+    font-weight:700;
+    font-size:0.85rem;
+    padding:0.55rem 0;
+    cursor:pointer;
+    border-radius:4px;
+  }
+  .restart-btn:active{ background:var(--yellow); }
+
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:var(--overlay);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:10;
+  }
+  .modal-overlay[hidden]{ display:none; }
+  .modal{
+    background:var(--bg);
+    width:100%;
+    max-width:420px;
+    border-radius:14px 14px 0 0;
+    padding:1.1rem 1.1rem 1.4rem;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+  }
+  @media (min-width:480px){
+    .modal-overlay{ align-items:center; }
+    .modal{ border-radius:14px; }
+  }
+  .modal h3{ margin:0 0 0.9rem; font-size:1.05rem; }
+  .modal p{ font-size:0.86rem; color:var(--ink-soft); line-height:1.5; }
+
+  /* Single button that opens a dropdown to choose the person */
+  .person-picker{ position:relative; margin-bottom:0.9rem; }
+  .person-picker-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0.65rem 0.9rem;
+    border:2px solid var(--grid);
+    border-radius:8px;
+    background:var(--bg);
+    color:var(--ink-soft);
+    font-weight:700;
+    font-size:0.95rem;
+    cursor:pointer;
+  }
+  .person-picker-btn.selected{
+    border-color:var(--yellow-deep);
+    background:var(--yellow-pale);
+    color:var(--ink);
+  }
+  .person-picker-btn .caret{
+    font-size:0.75rem;
+    color:var(--ink-soft);
+    margin-left:0.5rem;
+  }
+  .person-menu{
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0; right:0;
+    background:var(--bg);
+    border:1px solid var(--grid);
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 6px 18px rgba(0,0,0,0.16);
+    z-index:6;
+  }
+  .person-menu[hidden]{ display:none; }
+  .person-option{
+    display:block;
+    width:100%;
+    text-align:left;
+    padding:0.6rem 0.9rem;
+    border:none;
+    border-bottom:1px solid var(--grid);
+    background:var(--bg);
+    color:var(--ink);
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .person-option:last-child{ border-bottom:none; }
+  .person-option:hover{ background:var(--yellow-pale); }
+
+  .modal label{
+    display:block;
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    margin-bottom:0.8rem;
+  }
+  .modal label input[type="date"], .modal label input[type="number"]{
+    width:100%;
+    margin-top:0.3rem;
+    padding:0.5rem 0.6rem;
+    border:1px solid var(--grid);
+    border-radius:6px;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:inherit;
+    font-size:0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .modal-actions{ display:flex; gap:0.6rem; margin-top:0.4rem; }
+  .btn-secondary, .btn-primary{
+    flex:1;
+    padding:0.65rem 0;
+    border-radius:8px;
+    font-weight:700;
+    font-size:0.9rem;
+    cursor:pointer;
+  }
+  .btn-secondary{ border:1px solid var(--grid); background:var(--bg); color:var(--ink-soft); }
+  .btn-primary{ border:none; background:var(--yellow); color:var(--ink); }
+  .btn-primary:active{ background:var(--yellow-deep); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="titlebar">
+    <span class="name">Anniversary Fund</span>
+    <span class="sub">Sherie &amp; Leigh</span>
+  </div>
+
+  <div class="sheet-container">
+
+    <div class="sheet active" id="sheet-contributions">
+      <table>
+        <tr class="head-row">
+          <th class="row-head">#</th>
+          <td>Date</td><td class="num">Sherie</td><td class="num">Leigh</td><td class="num">Balance</td>
+        </tr>
+        <tbody id="ledger-body"></tbody>
+        <tr class="add-row">
+          <td colspan="5"><button class="add-full-btn" id="open-modal-btn" type="button">+ Add contribution</button></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="sheet" id="sheet-summary">
+      <table>
+        <tr class="head-row">
+          <td>Metric</td><td class="num">Value</td>
+        </tr>
+        <tr>
+          <td>Combined total saved</td><td class="num" id="sum-combined"></td>
+        </tr>
+        <tr>
+          <td>Target date</td><td class="num" id="sum-target"></td>
+        </tr>
+        <tr>
+          <td>Weeks remaining</td><td class="num" id="sum-weeks"></td>
+        </tr>
+        <tr>
+          <td>Days remaining</td><td class="num" id="sum-days"></td>
+        </tr>
+        <tr>
+          <td>Entries logged</td><td class="num" id="sum-count"></td>
+        </tr>
+        <tr class="subhead-row">
+          <td>Partner</td><td class="num">Total contributed</td>
+        </tr>
+        <tr>
+          <td>Sherie</td><td class="num" id="sum-sherie"></td>
+        </tr>
+        <tr>
+          <td>Leigh</td><td class="num" id="sum-leigh"></td>
+        </tr>
+      </table>
+      <div class="restart-wrap">
+        <button class="restart-btn" id="restart-open-btn" type="button">Start a new anniversary fund</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tabbar">
+    <button class="tab active" id="tab-contributions" type="button">Contributions</button>
+    <button class="tab" id="tab-summary" type="button">Summary</button>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal">
+    <h3>Add a contribution</h3>
+
+    <div class="person-picker" id="person-picker">
+      <button type="button" class="person-picker-btn" id="person-picker-btn">
+        <span id="person-picker-label">Select person</span>
+        <span class="caret">▾</span>
+      </button>
+      <div class="person-menu" id="person-menu" hidden>
+        <button type="button" class="person-option" data-name="Sherie">Sherie</button>
+        <button type="button" class="person-option" data-name="Leigh">Leigh</button>
+      </div>
+    </div>
+
+    <label>Date
+      <input type="date" id="modal-date">
+    </label>
+    <label>Amount (₱)
+      <input type="number" id="modal-amount" min="0" step="1">
+    </label>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="modal-cancel">Cancel</button>
+      <button type="button" class="btn-primary" id="modal-confirm">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="restart-overlay" hidden>
+  <div class="modal">
+    <h3>Start a new anniversary fund?</h3>
+    <p>This clears every logged contribution and moves the target date forward one year, to <strong id="restart-next-date"></strong>.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="restart-cancel">Cancel</button>
+      <button type="button" class="btn-primary" id="restart-confirm">Restart</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'anniversary-fund-state';
+  var DEFAULT_STATE = {
+    partners: ["Sherie","Leigh"],
+    targetDate: "2027-09-22",
+    weeklyDefault: 50,
+    entries: []
+  };
+
+  var STATE = null;
+  var selectedName = null;
+
+  function loadState(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch(e){}
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+
+  function saveState(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); } catch(e){}
+  }
+
+  function fmt(n){
+    var v = Math.round((n + Number.EPSILON) * 100) / 100;
+    return '₱' + v.toLocaleString(undefined, {minimumFractionDigits: v % 1 === 0 ? 0 : 2});
+  }
+  function todayISO(){
+    var d = new Date();
+    var tz = d.getTimezoneOffset() * 60000;
+    return new Date(d - tz).toISOString().slice(0,10);
+  }
+  function shortDate(iso){
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+  }
+  function niceDate(iso){
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, {month:'long', day:'numeric', year:'numeric'});
+  }
+  function nextYearISO(iso){
+    var parts = iso.split('-');
+    var y = parseInt(parts[0],10) + 1;
+    return y + '-' + parts[1] + '-' + parts[2];
+  }
+
+  function chronological(){
+    return STATE.entries.slice().sort(function(a,b){
+      return a.date === b.date ? a.id - b.id : (a.date < b.date ? -1 : 1);
+    });
+  }
+
+  // Group entries so that any contributions landing on the same date
+  // (i.e. the same week) share a single row, one column per partner.
+  function groupedByDate(){
+    var sorted = chronological();
+    var map = {};
+    var order = [];
+    sorted.forEach(function(e){
+      if (!map[e.date]){
+        map[e.date] = {
+          date: e.date,
+          Sherie: { amount: 0, ids: [] },
+          Leigh: { amount: 0, ids: [] }
+        };
+        order.push(e.date);
+      }
+      var g = map[e.date];
+      if (!g[e.name]) g[e.name] = { amount: 0, ids: [] };
+      g[e.name].amount += e.amount;
+      g[e.name].ids.push(e.id);
+    });
+    order.sort();
+    return order.map(function(d){ return map[d]; });
+  }
+
+  function amountCell(part){
+    var td = document.createElement('td');
+    if (part.ids.length){
+      td.className = 'num';
+      var inner = document.createElement('span');
+      inner.className = 'cell-inner';
+
+      var amt = document.createElement('span');
+      amt.textContent = fmt(part.amount);
+      inner.appendChild(amt);
+
+      var del = document.createElement('button');
+      del.className = 'del-btn-inline';
+      del.type = 'button';
+      del.setAttribute('aria-label', 'Delete entry');
+      del.textContent = '✕';
+      del.addEventListener('click', function(){ deleteEntries(part.ids); });
+      inner.appendChild(del);
+
+      td.appendChild(inner);
+    } else {
+      td.className = 'dim';
+      td.textContent = '—';
+    }
+    return td;
+  }
+
+  function renderLedger(){
+    var body = document.getElementById('ledger-body');
+    body.innerHTML = '';
+    var rows = groupedByDate();
+
+    var running = 0;
+    rows.forEach(function(g, idx){
+      running += g.Sherie.amount + g.Leigh.amount;
+      var tr = document.createElement('tr');
+
+      var thRow = document.createElement('th');
+      thRow.className = 'row-head';
+      thRow.textContent = String(idx + 1);
+      tr.appendChild(thRow);
+
+      var tdDate = document.createElement('td');
+      tdDate.textContent = shortDate(g.date);
+      tr.appendChild(tdDate);
+
+      tr.appendChild(amountCell(g.Sherie));
+      tr.appendChild(amountCell(g.Leigh));
+
+      var tdBal = document.createElement('td');
+      tdBal.className = 'num';
+      tdBal.textContent = fmt(running);
+      tr.appendChild(tdBal);
+
+      body.appendChild(tr);
+    });
+  }
+
+  function renderSummary(){
+    var combined = STATE.entries.reduce(function(s,e){ return s + e.amount; }, 0);
+    document.getElementById('sum-combined').textContent = fmt(combined);
+    document.getElementById('sum-target').textContent = niceDate(STATE.targetDate);
+
+    var target = new Date(STATE.targetDate + 'T00:00:00');
+    var now = new Date();
+    var days = Math.max(0, Math.ceil((target - now) / 86400000));
+    document.getElementById('sum-weeks').textContent = Math.floor(days / 7);
+    document.getElementById('sum-days').textContent = days;
+    document.getElementById('sum-count').textContent = STATE.entries.length;
+
+    var sherieSum = STATE.entries.filter(function(e){ return e.name === 'Sherie'; }).reduce(function(s,e){ return s + e.amount; }, 0);
+    var leighSum = STATE.entries.filter(function(e){ return e.name === 'Leigh'; }).reduce(function(s,e){ return s + e.amount; }, 0);
+    document.getElementById('sum-sherie').textContent = fmt(sherieSum);
+    document.getElementById('sum-leigh').textContent = fmt(leighSum);
+
+    document.getElementById('restart-next-date').textContent = niceDate(nextYearISO(STATE.targetDate));
+  }
+
+  function renderAll(){
+    renderLedger();
+    renderSummary();
+  }
+
+  function addEntry(name, date, amount){
+    STATE.entries.push({ id: Date.now() + Math.random(), name: name, amount: amount, date: date });
+    saveState();
+    renderAll();
+  }
+  function deleteEntries(ids){
+    STATE.entries = STATE.entries.filter(function(e){ return ids.indexOf(e.id) === -1; });
+    saveState();
+    renderAll();
+  }
+  function restartFund(){
+    STATE.entries = [];
+    STATE.targetDate = nextYearISO(STATE.targetDate);
+    saveState();
+    renderAll();
+  }
+
+  var personPickerBtn, personPickerLabel, personMenu;
+
+  function closePersonMenu(){
+    personMenu.hidden = true;
+  }
+
+  function openAddModal(){
+    selectedName = null;
+    personPickerLabel.textContent = 'Select person';
+    personPickerBtn.classList.remove('selected');
+    closePersonMenu();
+    document.getElementById('modal-date').value = todayISO();
+    document.getElementById('modal-amount').value = STATE.weeklyDefault;
+    document.getElementById('modal-overlay').hidden = false;
+  }
+  function closeAddModal(){
+    closePersonMenu();
+    document.getElementById('modal-overlay').hidden = true;
+  }
+
+  function wireControls(){
+    personPickerBtn = document.getElementById('person-picker-btn');
+    personPickerLabel = document.getElementById('person-picker-label');
+    personMenu = document.getElementById('person-menu');
+
+    document.getElementById('open-modal-btn').addEventListener('click', openAddModal);
+    document.getElementById('modal-cancel').addEventListener('click', closeAddModal);
+
+    personPickerBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      personMenu.hidden = !personMenu.hidden;
+    });
+
+    document.querySelectorAll('.person-option').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        selectedName = btn.getAttribute('data-name');
+        personPickerLabel.textContent = selectedName;
+        personPickerBtn.classList.add('selected');
+        closePersonMenu();
+      });
+    });
+
+    document.addEventListener('click', function(e){
+      if (!personMenu.hidden && !personMenu.contains(e.target) && e.target !== personPickerBtn){
+        closePersonMenu();
+      }
+    });
+
+    document.getElementById('modal-confirm').addEventListener('click', function(){
+      var date = document.getElementById('modal-date').value;
+      var amount = parseFloat(document.getElementById('modal-amount').value);
+      if (!selectedName || !date || !amount || amount <= 0) return;
+
+      addEntry(selectedName, date, amount);
+      closeAddModal();
+    });
+
+    var tabC = document.getElementById('tab-contributions');
+    var tabS = document.getElementById('tab-summary');
+    var sheetC = document.getElementById('sheet-contributions');
+    var sheetS = document.getElementById('sheet-summary');
+    tabC.addEventListener('click', function(){
+      tabC.classList.add('active'); tabS.classList.remove('active');
+      sheetC.classList.add('active'); sheetS.classList.remove('active');
+    });
+    tabS.addEventListener('click', function(){
+      tabS.classList.add('active'); tabC.classList.remove('active');
+      sheetS.classList.add('active'); sheetC.classList.remove('active');
+    });
+
+    document.getElementById('restart-open-btn').addEventListener('click', function(){
+      document.getElementById('restart-next-date').textContent = niceDate(nextYearISO(STATE.targetDate));
+      document.getElementById('restart-overlay').hidden = false;
+    });
+    document.getElementById('restart-cancel').addEventListener('click', function(){
+      document.getElementById('restart-overlay').hidden = true;
+    });
+    document.getElementById('restart-confirm').addEventListener('click', function(){
+      document.getElementById('restart-overlay').hidden = true;
+      restartFund();
+    });
+  }
+
+  STATE = loadState();
+  wireControls();
+  renderAll();
+})();
+</script>
+</body>
+</html>
