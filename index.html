@@ -2,68 +2,94 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anniversary Fund</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anniversary Savings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#FFFFFF;
-    --surface-tint:#FFFBEA;
-    --grid:#EDE1AE;
-    --ink:#2B2410;
-    --ink-soft:#7A6E3E;
-    --yellow:#FFC72C;
-    --yellow-deep:#E0A800;
-    --yellow-pale:#FFF3C4;
-    --danger:#C0392B;
-    --overlay:rgba(43,36,16,0.45);
+    --cream:#FFFBF2;
+    --card:#FFFFFF;
+    --yellow:#FFCB4D;
+    --yellow-deep:#F0A21E;
+    --yellow-pale:#FFF3D6;
+    --line:#F4E1AF;
+    --ink:#5B4726;
+    --ink-soft:#B99A5B;
+    --danger:#E2694A;
+    --overlay:rgba(91,71,38,0.4);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#1E1B10;
-      --surface-tint:#2A2510;
-      --grid:#4A4222;
-      --ink:#F5EFD9;
-      --ink-soft:#C9BE8E;
-      --yellow:#E0B840;
-      --yellow-deep:#C79A2C;
-      --yellow-pale:#3A3319;
-      --danger:#E07A6C;
+      --bg:#241D12;
+      --cream:#2B2216;
+      --card:#2F2618;
+      --yellow:#E0A83C;
+      --yellow-deep:#C98A1F;
+      --yellow-pale:#3A2E1B;
+      --line:#4A3B22;
+      --ink:#F7EAD2;
+      --ink-soft:#C7A868;
+      --danger:#E88B6D;
       --overlay:rgba(0,0,0,0.6);
     }
   }
   :root[data-theme="dark"]{
-    --bg:#1E1B10;
-    --surface-tint:#2A2510;
-    --grid:#4A4222;
-    --ink:#F5EFD9;
-    --ink-soft:#C9BE8E;
-    --yellow:#E0B840;
-    --yellow-deep:#C79A2C;
-    --yellow-pale:#3A3319;
-    --danger:#E07A6C;
+    --bg:#241D12;
+    --cream:#2B2216;
+    --card:#2F2618;
+    --yellow:#E0A83C;
+    --yellow-deep:#C98A1F;
+    --yellow-pale:#3A2E1B;
+    --line:#4A3B22;
+    --ink:#F7EAD2;
+    --ink-soft:#C7A868;
+    --danger:#E88B6D;
     --overlay:rgba(0,0,0,0.6);
   }
 
   *{ box-sizing:border-box; }
+  html{ height:100%; scroll-padding-top:env(safe-area-inset-top, 0px); }
   body{
+    height:100%;
     margin:0;
-    background:var(--surface-tint);
+    background:var(--cream);
     color:var(--ink);
-    font-family:Calibri, 'Segoe UI', Arial, sans-serif;
+    font-family:'Nunito', Calibri, 'Segoe UI', Arial, sans-serif;
     font-size:13px;
+    padding-top:env(safe-area-inset-top, 0px);
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  h1,h2,h3,.sub,.tab,.add-full-btn,.restart-btn,.btn-primary,.btn-secondary,.person-picker-btn{
+    font-family:'Quicksand', 'Nunito', Calibri, sans-serif;
   }
   .app{ max-width:720px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); }
+  .app[hidden]{ display:none; }
 
   .titlebar{
-    background:var(--yellow);
+    background:var(--yellow-pale);
+    border-bottom:2px solid var(--line);
     color:var(--ink);
-    padding:0.6rem 0.9rem;
+    padding:1rem 1rem 0.9rem;
     display:flex;
-    align-items:baseline;
+    align-items:center;
+    justify-content:center;
     gap:0.5rem;
+    padding-top:calc(1rem + env(safe-area-inset-top, 0px));
   }
-  .titlebar .name{ font-weight:700; font-size:0.98rem; }
-  .titlebar .sub{ font-size:0.76rem; opacity:0.75; }
+  .titlebar .mark{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--yellow);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.85rem; font-weight:700; color:var(--bg);
+  }
+  .titlebar .sub{
+    font-weight:700;
+    font-size:1.05rem;
+    letter-spacing:0.01em;
+  }
 
   .sheet-container{ flex:1; overflow-x:auto; }
   .sheet{ display:none; }
@@ -72,17 +98,18 @@
   table{ border-collapse:collapse; width:100%; min-width:460px; }
 
   th.row-head{
-    background:var(--surface-tint);
+    background:var(--cream);
     color:var(--ink-soft);
     font-weight:400;
     text-align:center;
-    width:2rem;
+    white-space:nowrap;
+    width:4.2rem;
     font-size:0.74rem;
-    border:1px solid var(--grid);
+    border:1px solid var(--line);
   }
   td{
-    border:1px solid var(--grid);
-    padding:0.45rem 0.6rem;
+    border:1px solid var(--line);
+    padding:0.5rem 0.6rem;
     font-size:0.85rem;
   }
   tr.head-row td{
@@ -90,13 +117,13 @@
     font-weight:700;
     color:var(--ink);
   }
-  tr.subhead-row td{
-    background:var(--yellow-pale);
-    font-weight:700;
-    color:var(--ink);
-  }
   td.num{ text-align:right; font-variant-numeric: tabular-nums; }
   td.dim{ color:var(--ink-soft); text-align:right; }
+  .advance-tag{
+    font-size:0.68rem;
+    font-weight:700;
+    color:var(--yellow-deep);
+  }
 
   .cell-inner{
     display:flex;
@@ -116,28 +143,26 @@
   }
   .del-btn-inline:hover{ color:var(--danger); opacity:1; }
 
-  .add-row td{ padding:0; }
+  .add-row td{ padding:0; border:none; }
   .add-full-btn{
     width:100%;
     border:none;
     background:var(--yellow);
     color:var(--ink);
     font-weight:700;
-    font-size:0.9rem;
-    padding:0.6rem 0;
+    font-size:0.92rem;
+    padding:0.75rem 0;
     cursor:pointer;
   }
   .add-full-btn:active{ background:var(--yellow-deep); }
 
-  /* Pill-style segmented switcher for Contributions / Summary,
-     intentionally not a spreadsheet-style tab strip. */
   .tabbar{
     display:flex;
-    gap:0.3rem;
+    gap:0.35rem;
     background:var(--yellow-pale);
-    border-top:1px solid var(--grid);
-    padding:0.55rem 0.7rem;
-    border-radius:0;
+    border-top:1px solid var(--line);
+    padding:0.6rem 0.8rem;
+    padding-bottom:calc(0.6rem + env(safe-area-inset-bottom, 0px));
   }
   .tab{
     flex:1;
@@ -146,29 +171,29 @@
     color:var(--ink-soft);
     font-size:0.85rem;
     font-weight:600;
-    padding:0.5rem 0;
+    padding:0.55rem 0;
     cursor:pointer;
     border-radius:999px;
-    transition:background 0.15s ease, color 0.15s ease;
+    transition:background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
   }
   .tab.active{
-    background:var(--yellow);
+    background:var(--card);
     color:var(--ink);
     font-weight:700;
-    box-shadow:0 1px 3px rgba(0,0,0,0.12);
+    box-shadow:0 2px 6px rgba(91,71,38,0.12);
   }
 
-  .restart-wrap{ padding:0.9rem 0.9rem 1.2rem; }
+  .restart-wrap{ padding:1rem 0.9rem 1.3rem; }
   .restart-btn{
     width:100%;
-    border:1px solid var(--yellow-deep);
+    border:1.5px dashed var(--yellow-deep);
     background:var(--yellow-pale);
     color:var(--ink);
     font-weight:700;
     font-size:0.85rem;
-    padding:0.55rem 0;
+    padding:0.6rem 0;
     cursor:pointer;
-    border-radius:4px;
+    border-radius:12px;
   }
   .restart-btn:active{ background:var(--yellow); }
 
@@ -177,34 +202,136 @@
     background:var(--overlay);
     display:flex; align-items:flex-end; justify-content:center;
     z-index:10;
+    padding-bottom:env(safe-area-inset-bottom, 0px);
   }
   .modal-overlay[hidden]{ display:none; }
   .modal{
-    background:var(--bg);
+    background:var(--card);
     width:100%;
     max-width:420px;
-    border-radius:14px 14px 0 0;
-    padding:1.1rem 1.1rem 1.4rem;
-    box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+    border-radius:20px 20px 0 0;
+    padding:1.3rem 1.2rem 1.5rem;
+    box-shadow:0 -4px 24px rgba(0,0,0,0.14);
   }
   @media (min-width:480px){
     .modal-overlay{ align-items:center; }
-    .modal{ border-radius:14px; }
+    .modal{ border-radius:20px; }
   }
-  .modal h3{ margin:0 0 0.9rem; font-size:1.05rem; }
+  .modal h3{ margin:0 0 1rem; font-size:1.08rem; }
   .modal p{ font-size:0.86rem; color:var(--ink-soft); line-height:1.5; }
+  .field-hint{
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin:-0.55rem 0 0.85rem;
+  }
 
-  /* Single button that opens a dropdown to choose the person */
+  .lock-screen{
+    position:fixed; inset:0;
+    background:var(--cream);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:20;
+    padding:1.2rem;
+    overflow:hidden;
+  }
+  .lock-screen[hidden]{ display:none; }
+  .lock-card{
+    position:relative;
+    width:100%;
+    max-width:300px;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:22px;
+    padding:1.9rem 1.5rem 1.6rem;
+    text-align:center;
+    box-shadow:0 10px 26px rgba(91,71,38,0.12);
+  }
+  .lock-card .lock-badge{
+    width:52px;
+    height:52px;
+    margin:0 auto 0.9rem;
+    border-radius:50%;
+    background:var(--yellow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:0.95rem;
+    color:var(--bg);
+    letter-spacing:0.02em;
+  }
+  .lock-card h2{
+    margin:0 0 0.3rem;
+    font-size:1.05rem;
+    color:var(--ink);
+  }
+  .lock-card p{
+    margin:0 0 1.1rem;
+    font-size:0.83rem;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .lock-card input[type="password"]{
+    width:100%;
+    padding:0.68rem 0.8rem;
+    border:2px solid var(--line);
+    border-radius:14px;
+    background:var(--cream);
+    color:var(--ink);
+    font-size:1.05rem;
+    letter-spacing:0.3em;
+    text-align:center;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    margin-bottom:0.7rem;
+    transition:border-color 0.15s ease;
+  }
+  .lock-card input[type="password"]:focus{
+    outline:none;
+    border-color:var(--yellow-deep);
+  }
+  .lock-card input[type="password"].invalid{
+    border-color:var(--danger);
+    animation: shake 0.35s ease;
+  }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+  .lock-card .lock-error{
+    font-size:0.78rem;
+    color:var(--danger);
+    min-height:1.1em;
+    margin:-0.3rem 0 0.8rem;
+    font-weight:600;
+  }
+  .lock-card .lock-btn{
+    width:100%;
+    border:none;
+    background:var(--yellow);
+    color:var(--ink);
+    font-weight:700;
+    font-size:0.92rem;
+    padding:0.72rem 0;
+    border-radius:14px;
+    cursor:pointer;
+  }
+  .lock-card .lock-btn:active{ background:var(--yellow-deep); transform:translateY(1px); }
+
   .person-picker{ position:relative; margin-bottom:0.9rem; }
   .person-picker-btn{
     width:100%;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0.65rem 0.9rem;
-    border:2px solid var(--grid);
-    border-radius:8px;
-    background:var(--bg);
+    padding:0.68rem 0.95rem;
+    border:2px solid var(--line);
+    border-radius:14px;
+    background:var(--card);
     color:var(--ink-soft);
     font-weight:700;
     font-size:0.95rem;
@@ -224,11 +351,11 @@
     position:absolute;
     top:calc(100% + 6px);
     left:0; right:0;
-    background:var(--bg);
-    border:1px solid var(--grid);
-    border-radius:8px;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:14px;
     overflow:hidden;
-    box-shadow:0 6px 18px rgba(0,0,0,0.16);
+    box-shadow:0 6px 18px rgba(91,71,38,0.14);
     z-index:6;
   }
   .person-menu[hidden]{ display:none; }
@@ -236,10 +363,10 @@
     display:block;
     width:100%;
     text-align:left;
-    padding:0.6rem 0.9rem;
+    padding:0.65rem 0.95rem;
     border:none;
-    border-bottom:1px solid var(--grid);
-    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    background:var(--card);
     color:var(--ink);
     font-size:0.9rem;
     font-weight:600;
@@ -252,48 +379,60 @@
     display:block;
     font-size:0.8rem;
     color:var(--ink-soft);
+    font-weight:600;
     margin-bottom:0.8rem;
   }
   .modal label input[type="date"], .modal label input[type="number"]{
     width:100%;
-    margin-top:0.3rem;
-    padding:0.5rem 0.6rem;
-    border:1px solid var(--grid);
-    border-radius:6px;
-    background:var(--bg);
+    margin-top:0.35rem;
+    padding:0.55rem 0.65rem;
+    border:2px solid var(--line);
+    border-radius:12px;
+    background:var(--card);
     color:var(--ink);
     font-family:inherit;
     font-size:0.9rem;
     font-variant-numeric: tabular-nums;
   }
-  .modal-actions{ display:flex; gap:0.6rem; margin-top:0.4rem; }
+  .modal-actions{ display:flex; gap:0.6rem; margin-top:0.5rem; }
   .btn-secondary, .btn-primary{
     flex:1;
-    padding:0.65rem 0;
-    border-radius:8px;
+    padding:0.68rem 0;
+    border-radius:12px;
     font-weight:700;
     font-size:0.9rem;
     cursor:pointer;
   }
-  .btn-secondary{ border:1px solid var(--grid); background:var(--bg); color:var(--ink-soft); }
+  .btn-secondary{ border:2px solid var(--line); background:var(--card); color:var(--ink-soft); }
   .btn-primary{ border:none; background:var(--yellow); color:var(--ink); }
   .btn-primary:active{ background:var(--yellow-deep); }
 </style>
 </head>
 <body>
-<div class="app">
+
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-badge">S+L</div>
+    <h2>Locked</h2>
+    <p>Enter the password to continue</p>
+    <input type="password" id="lock-input" inputmode="numeric" autocomplete="off" placeholder="••••••">
+    <div class="lock-error" id="lock-error"></div>
+    <button type="button" class="lock-btn" id="lock-submit">Unlock</button>
+  </div>
+</div>
+
+<div class="app" id="app" hidden>
 
   <div class="titlebar">
-    <span class="name">Anniversary Fund</span>
+    <span class="mark">S+L</span>
     <span class="sub">Sherie &amp; Leigh</span>
   </div>
-
   <div class="sheet-container">
 
     <div class="sheet active" id="sheet-contributions">
       <table>
         <tr class="head-row">
-          <th class="row-head">#</th>
+          <th class="row-head">Week</th>
           <td>Date</td><td class="num">Sherie</td><td class="num">Leigh</td><td class="num">Balance</td>
         </tr>
         <tbody id="ledger-body"></tbody>
@@ -312,6 +451,12 @@
           <td>Combined total saved</td><td class="num" id="sum-combined"></td>
         </tr>
         <tr>
+          <td>Sherie's total</td><td class="num" id="sum-sherie"></td>
+        </tr>
+        <tr>
+          <td>Leigh's total</td><td class="num" id="sum-leigh"></td>
+        </tr>
+        <tr>
           <td>Target date</td><td class="num" id="sum-target"></td>
         </tr>
         <tr>
@@ -319,18 +464,6 @@
         </tr>
         <tr>
           <td>Days remaining</td><td class="num" id="sum-days"></td>
-        </tr>
-        <tr>
-          <td>Entries logged</td><td class="num" id="sum-count"></td>
-        </tr>
-        <tr class="subhead-row">
-          <td>Partner</td><td class="num">Total contributed</td>
-        </tr>
-        <tr>
-          <td>Sherie</td><td class="num" id="sum-sherie"></td>
-        </tr>
-        <tr>
-          <td>Leigh</td><td class="num" id="sum-leigh"></td>
         </tr>
       </table>
       <div class="restart-wrap">
@@ -368,6 +501,7 @@
     <label>Amount (₱)
       <input type="number" id="modal-amount" min="0" step="1">
     </label>
+    <div class="field-hint" id="advance-hint"></div>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="modal-cancel">Cancel</button>
       <button type="button" class="btn-primary" id="modal-confirm">Add</button>
@@ -386,33 +520,66 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script>
 (function(){
-  var STORAGE_KEY = 'anniversary-fund-state';
-  var DEFAULT_STATE = {
-    partners: ["Sherie","Leigh"],
-    targetDate: "2027-09-22",
-    weeklyDefault: 50,
-    entries: []
+  // Fill these in from your Firebase project's web app settings.
+  // Only used when this page is NOT running inside a Claude artifact
+  // (e.g. when it's hosted on GitHub Pages).
+  var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
   };
 
-  var STATE = null;
+  var LOCAL_STORAGE_KEY = 'anniversary-fund-state';
+  var UNLOCK_KEY = 'anniversary-fund-unlocked';
+  var PASSWORD = '121225';
+  var DEFAULT_TARGET_DATE = "2027-09-22";
+  var DEFAULT_START_DATE = "2026-09-07";
+  var DEFAULT_WEEKLY = 50;
+  var MAX_ADVANCE_WEEKS = 52;
+
+  var STATE = {
+    targetDate: DEFAULT_TARGET_DATE,
+    startDate: DEFAULT_START_DATE,
+    weeklyDefault: DEFAULT_WEEKLY,
+    entries: []
+  };
   var selectedName = null;
 
-  function loadState(){
+  var usingDb = false;
+  var entriesRef = null;
+  var settingsRef = null;
+  var settingsCreateAttempted = false;
+
+  // ---------- local-storage fallback (used only if the shared
+  // database capability isn't available in this view) ----------
+  function loadLocalState(){
     try {
-      var saved = localStorage.getItem(STORAGE_KEY);
+      var saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) return JSON.parse(saved);
     } catch(e){}
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return { targetDate: DEFAULT_TARGET_DATE, startDate: DEFAULT_START_DATE, weeklyDefault: DEFAULT_WEEKLY, entries: [] };
+  }
+  function saveLocalState(){
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+        targetDate: STATE.targetDate,
+        startDate: STATE.startDate,
+        weeklyDefault: STATE.weeklyDefault,
+        entries: STATE.entries
+      }));
+    } catch(e){}
   }
 
-  function saveState(){
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); } catch(e){}
-  }
-
+  function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
   function fmt(n){
-    var v = Math.round((n + Number.EPSILON) * 100) / 100;
+    var v = round2(n);
     return '₱' + v.toLocaleString(undefined, {minimumFractionDigits: v % 1 === 0 ? 0 : 2});
   }
   function todayISO(){
@@ -433,10 +600,46 @@
     var y = parseInt(parts[0],10) + 1;
     return y + '-' + parts[1] + '-' + parts[2];
   }
+  function addDaysISO(iso, days){
+    var d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + days);
+    var tz = d.getTimezoneOffset() * 60000;
+    return new Date(d - tz).toISOString().slice(0,10);
+  }
+  // Week 1 runs from STATE.startDate through 6 days later, week 2
+  // starts 7 days after week 1 started, and so on — so a contribution's
+  // week number always reflects its actual distance from the start
+  // date, not just how many rows are in the ledger.
+  function weekNumberForDate(iso){
+    var start = new Date(STATE.startDate + 'T00:00:00');
+    var d = new Date(iso + 'T00:00:00');
+    var diffDays = Math.round((d - start) / 86400000);
+    return Math.floor(diffDays / 7) + 1;
+  }
+
+  // ---------- advance-payment split ----------
+  // Given a person, the date they're paying for, and the amount,
+  // work out how many weeks that amount covers. The week being paid
+  // (the selected date) absorbs the base weekly amount plus any
+  // leftover that isn't an exact multiple, and is never flagged as
+  // an advance. Every following week the amount stretches to cover
+  // is flagged advance:true so the ledger can label it.
+  function buildWeekEntries(name, dateISO, amount){
+    var perWeek = STATE.weeklyDefault > 0 ? STATE.weeklyDefault : amount;
+    var weeksCovered = Math.max(1, Math.floor(amount / perWeek));
+    if (weeksCovered > MAX_ADVANCE_WEEKS) weeksCovered = MAX_ADVANCE_WEEKS;
+    var firstAmount = round2(amount - perWeek * (weeksCovered - 1));
+    var entries = [{ name: name, date: dateISO, amount: firstAmount, advance: false }];
+    for (var i = 1; i < weeksCovered; i++){
+      entries.push({ name: name, date: addDaysISO(dateISO, 7 * i), amount: perWeek, advance: true });
+    }
+    return entries;
+  }
 
   function chronological(){
     return STATE.entries.slice().sort(function(a,b){
-      return a.date === b.date ? a.id - b.id : (a.date < b.date ? -1 : 1);
+      if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      return String(a.id) < String(b.id) ? -1 : (String(a.id) > String(b.id) ? 1 : 0);
     });
   }
 
@@ -450,6 +653,7 @@
       if (!map[e.date]){
         map[e.date] = {
           date: e.date,
+          advance: false,
           Sherie: { amount: 0, ids: [] },
           Leigh: { amount: 0, ids: [] }
         };
@@ -459,6 +663,7 @@
       if (!g[e.name]) g[e.name] = { amount: 0, ids: [] };
       g[e.name].amount += e.amount;
       g[e.name].ids.push(e.id);
+      if (e.advance) g.advance = true;
     });
     order.sort();
     return order.map(function(d){ return map[d]; });
@@ -503,11 +708,17 @@
 
       var thRow = document.createElement('th');
       thRow.className = 'row-head';
-      thRow.textContent = String(idx + 1);
+      thRow.textContent = 'Week ' + weekNumberForDate(g.date);
       tr.appendChild(thRow);
 
       var tdDate = document.createElement('td');
       tdDate.textContent = shortDate(g.date);
+      if (g.advance){
+        var tag = document.createElement('span');
+        tag.className = 'advance-tag';
+        tag.textContent = ' (advance)';
+        tdDate.appendChild(tag);
+      }
       tr.appendChild(tdDate);
 
       tr.appendChild(amountCell(g.Sherie));
@@ -524,7 +735,14 @@
 
   function renderSummary(){
     var combined = STATE.entries.reduce(function(s,e){ return s + e.amount; }, 0);
+    var sherieTotal = STATE.entries.filter(function(e){ return e.name === 'Sherie'; })
+      .reduce(function(s,e){ return s + e.amount; }, 0);
+    var leighTotal = STATE.entries.filter(function(e){ return e.name === 'Leigh'; })
+      .reduce(function(s,e){ return s + e.amount; }, 0);
+
     document.getElementById('sum-combined').textContent = fmt(combined);
+    document.getElementById('sum-sherie').textContent = fmt(sherieTotal);
+    document.getElementById('sum-leigh').textContent = fmt(leighTotal);
     document.getElementById('sum-target').textContent = niceDate(STATE.targetDate);
 
     var target = new Date(STATE.targetDate + 'T00:00:00');
@@ -532,12 +750,6 @@
     var days = Math.max(0, Math.ceil((target - now) / 86400000));
     document.getElementById('sum-weeks').textContent = Math.floor(days / 7);
     document.getElementById('sum-days').textContent = days;
-    document.getElementById('sum-count').textContent = STATE.entries.length;
-
-    var sherieSum = STATE.entries.filter(function(e){ return e.name === 'Sherie'; }).reduce(function(s,e){ return s + e.amount; }, 0);
-    var leighSum = STATE.entries.filter(function(e){ return e.name === 'Leigh'; }).reduce(function(s,e){ return s + e.amount; }, 0);
-    document.getElementById('sum-sherie').textContent = fmt(sherieSum);
-    document.getElementById('sum-leigh').textContent = fmt(leighSum);
 
     document.getElementById('restart-next-date').textContent = niceDate(nextYearISO(STATE.targetDate));
   }
@@ -547,27 +759,71 @@
     renderSummary();
   }
 
-  function addEntry(name, date, amount){
-    STATE.entries.push({ id: Date.now() + Math.random(), name: name, amount: amount, date: date });
-    saveState();
-    renderAll();
+  // ---------- write operations: go through the shared database
+  // when available, otherwise fall back to this browser's storage ----------
+  function addContribution(name, date, amount){
+    var weekEntries = buildWeekEntries(name, date, amount);
+    if (usingDb && entriesRef){
+      weekEntries.forEach(function(entry){
+        entriesRef.add(entry).catch(function(){});
+      });
+    } else {
+      weekEntries.forEach(function(entry){
+        entry.id = Date.now() + Math.random();
+        STATE.entries.push(entry);
+      });
+      saveLocalState();
+      renderAll();
+    }
   }
   function deleteEntries(ids){
-    STATE.entries = STATE.entries.filter(function(e){ return ids.indexOf(e.id) === -1; });
-    saveState();
-    renderAll();
+    if (usingDb && entriesRef){
+      ids.forEach(function(id){ entriesRef.doc(String(id)).delete().catch(function(){}); });
+    } else {
+      STATE.entries = STATE.entries.filter(function(e){ return ids.indexOf(e.id) === -1; });
+      saveLocalState();
+      renderAll();
+    }
   }
   function restartFund(){
-    STATE.entries = [];
-    STATE.targetDate = nextYearISO(STATE.targetDate);
-    saveState();
-    renderAll();
+    var newTargetDate = nextYearISO(STATE.targetDate);
+    var newStartDate = STATE.targetDate;
+    if (usingDb && entriesRef && settingsRef){
+      entriesRef.get().then(function(snap){
+        snap.docs.forEach(function(d){ entriesRef.doc(d.id).delete().catch(function(){}); });
+      }).catch(function(){});
+      settingsRef.update({ targetDate: newTargetDate, startDate: newStartDate }).catch(function(){
+        settingsRef.set({ targetDate: newTargetDate, startDate: newStartDate, weeklyDefault: STATE.weeklyDefault }).catch(function(){});
+      });
+    } else {
+      STATE.entries = [];
+      STATE.targetDate = newTargetDate;
+      STATE.startDate = newStartDate;
+      saveLocalState();
+      renderAll();
+    }
   }
 
   var personPickerBtn, personPickerLabel, personMenu;
 
   function closePersonMenu(){
     personMenu.hidden = true;
+  }
+
+  function updateAdvanceHint(){
+    var hint = document.getElementById('advance-hint');
+    var amount = parseFloat(document.getElementById('modal-amount').value);
+    var perWeek = STATE.weeklyDefault;
+    if (!amount || amount <= perWeek || !perWeek){
+      hint.textContent = '';
+      return;
+    }
+    var weeksCovered = Math.min(MAX_ADVANCE_WEEKS, Math.max(1, Math.floor(amount / perWeek)));
+    if (weeksCovered <= 1){
+      hint.textContent = '';
+      return;
+    }
+    hint.textContent = 'Covers this week plus ' + (weeksCovered - 1) + ' week' + (weeksCovered - 1 > 1 ? 's' : '') + ' in advance.';
   }
 
   function openAddModal(){
@@ -578,6 +834,7 @@
     document.getElementById('modal-date').value = todayISO();
     document.getElementById('modal-amount').value = STATE.weeklyDefault;
     document.getElementById('modal-overlay').hidden = false;
+    updateAdvanceHint();
   }
   function closeAddModal(){
     closePersonMenu();
@@ -591,6 +848,7 @@
 
     document.getElementById('open-modal-btn').addEventListener('click', openAddModal);
     document.getElementById('modal-cancel').addEventListener('click', closeAddModal);
+    document.getElementById('modal-amount').addEventListener('input', updateAdvanceHint);
 
     personPickerBtn.addEventListener('click', function(e){
       e.stopPropagation();
@@ -618,7 +876,7 @@
       var amount = parseFloat(document.getElementById('modal-amount').value);
       if (!selectedName || !date || !amount || amount <= 0) return;
 
-      addEntry(selectedName, date, amount);
+      addContribution(selectedName, date, amount);
       closeAddModal();
     });
 
@@ -648,9 +906,128 @@
     });
   }
 
-  STATE = loadState();
-  wireControls();
-  renderAll();
+  // ---------- storage init: try the shared database first so every
+  // device that opens this page sees the same contributions. Inside a
+  // Claude artifact that's window.claude's db capability; anywhere
+  // else (GitHub Pages included) it's your own Firebase project. ----------
+  function initStorage(){
+    if (window.claude && typeof window.claude.use === 'function'){
+      window.claude.use('db').then(function(db){
+        if (db){
+          usingDb = true;
+          entriesRef = db.collection('entries');
+          settingsRef = db.doc('settings/fund');
+          wireDbListeners();
+        } else {
+          initFirebaseOrLocal();
+        }
+      }).catch(function(){
+        initFirebaseOrLocal();
+      });
+    } else {
+      initFirebaseOrLocal();
+    }
+  }
+
+  function initFirebaseOrLocal(){
+    var configured = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('YOUR_') !== 0;
+    if (configured && typeof firebase !== 'undefined'){
+      try {
+        firebase.initializeApp(firebaseConfig);
+        var fdb = firebase.firestore();
+        usingDb = true;
+        entriesRef = fdb.collection('entries');
+        settingsRef = fdb.doc('settings/fund');
+        wireDbListeners();
+        return;
+      } catch(e){
+        // fall through to local storage below
+      }
+    }
+    initLocalFallback();
+  }
+
+  function wireDbListeners(){
+    settingsRef.onSnapshot(function(snap){
+      if (snap.exists){
+        var d = snap.data() || {};
+        STATE.targetDate = d.targetDate || DEFAULT_TARGET_DATE;
+        STATE.startDate = d.startDate || DEFAULT_START_DATE;
+        STATE.weeklyDefault = d.weeklyDefault || DEFAULT_WEEKLY;
+      } else if (!settingsCreateAttempted){
+        settingsCreateAttempted = true;
+        settingsRef.set({ targetDate: DEFAULT_TARGET_DATE, startDate: DEFAULT_START_DATE, weeklyDefault: DEFAULT_WEEKLY }).catch(function(){});
+        STATE.targetDate = DEFAULT_TARGET_DATE;
+        STATE.startDate = DEFAULT_START_DATE;
+        STATE.weeklyDefault = DEFAULT_WEEKLY;
+      }
+      renderAll();
+    }, function(){});
+
+    entriesRef.onSnapshot(function(snap){
+      STATE.entries = snap.docs.map(function(d){
+        var data = d.data() || {};
+        return { id: d.id, name: data.name, amount: data.amount, date: data.date, advance: !!data.advance };
+      });
+      renderAll();
+    }, function(){});
+  }
+
+  function initLocalFallback(){
+    usingDb = false;
+    var loaded = loadLocalState();
+    STATE.targetDate = loaded.targetDate;
+    STATE.startDate = loaded.startDate || DEFAULT_START_DATE;
+    STATE.weeklyDefault = loaded.weeklyDefault;
+    STATE.entries = loaded.entries;
+    renderAll();
+  }
+
+  function unlockApp(){
+    document.getElementById('lock-screen').hidden = true;
+    document.getElementById('app').hidden = false;
+    try { sessionStorage.setItem(UNLOCK_KEY, '1'); } catch(e){}
+    wireControls();
+    initStorage();
+  }
+
+  function wireLock(){
+    var input = document.getElementById('lock-input');
+    var error = document.getElementById('lock-error');
+    var submit = document.getElementById('lock-submit');
+
+    function attempt(){
+      if (input.value === PASSWORD){
+        error.textContent = '';
+        input.classList.remove('invalid');
+        unlockApp();
+      } else {
+        error.textContent = 'Oops, wrong password. Try again!';
+        input.classList.add('invalid');
+        input.value = '';
+        input.focus();
+        setTimeout(function(){ input.classList.remove('invalid'); }, 400);
+      }
+    }
+
+    submit.addEventListener('click', attempt);
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') attempt();
+    });
+
+    var alreadyUnlocked = false;
+    try { alreadyUnlocked = sessionStorage.getItem(UNLOCK_KEY) === '1'; } catch(e){}
+    if (alreadyUnlocked){
+      document.getElementById('lock-screen').hidden = true;
+      document.getElementById('app').hidden = false;
+      wireControls();
+      initStorage();
+    } else {
+      input.focus();
+    }
+  }
+
+  wireLock();
 })();
 </script>
 </body>
