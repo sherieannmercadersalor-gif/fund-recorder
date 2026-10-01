@@ -119,17 +119,19 @@
   }
   td.num{ text-align:right; font-variant-numeric: tabular-nums; }
   td.dim{ color:var(--ink-soft); text-align:right; }
-  .advance-tag{
-    font-size:0.68rem;
-    font-weight:700;
-    color:var(--yellow-deep);
-  }
 
   .cell-inner{
     display:flex;
     align-items:center;
     justify-content:flex-end;
     gap:0.4rem;
+  }
+  .cell-date{
+    font-size:0.68rem;
+    color:var(--ink-soft);
+    font-weight:600;
+    text-align:right;
+    margin-top:0.15rem;
   }
   .del-btn-inline{
     background:none;
@@ -433,11 +435,11 @@
       <table>
         <tr class="head-row">
           <th class="row-head">Week</th>
-          <td>Date</td><td class="num">Sherie</td><td class="num">Leigh</td><td class="num">Balance</td>
+          <td class="num">Sherie</td><td class="num">Leigh</td><td class="num">Balance</td>
         </tr>
         <tbody id="ledger-body"></tbody>
         <tr class="add-row">
-          <td colspan="5"><button class="add-full-btn" id="open-modal-btn" type="button">+ Add contribution</button></td>
+          <td colspan="4"><button class="add-full-btn" id="open-modal-btn" type="button">+ Add contribution</button></td>
         </tr>
       </table>
     </div>
@@ -624,7 +626,7 @@ var firebaseConfig = {
   // (the selected date) absorbs the base weekly amount plus any
   // leftover that isn't an exact multiple, and is never flagged as
   // an advance. Every following week the amount stretches to cover
-  // is flagged advance:true so the ledger can label it.
+  // is flagged advance:true (kept in the data, just not labeled).
   function buildWeekEntries(name, dateISO, amount){
     var perWeek = STATE.weeklyDefault > 0 ? STATE.weeklyDefault : amount;
     var weeksCovered = Math.max(1, Math.floor(amount / perWeek));
@@ -644,30 +646,34 @@ var firebaseConfig = {
     });
   }
 
-  // Group entries so that any contributions landing on the same date
-  // (i.e. the same week) share a single row, one column per partner.
-  function groupedByDate(){
+  // Group entries by week number (not exact date). Each partner keeps
+  // their own date so the ledger can show it when it differs from the
+  // date shown for the row.
+  function groupedByWeek(){
     var sorted = chronological();
     var map = {};
     var order = [];
     sorted.forEach(function(e){
-      if (!map[e.date]){
-        map[e.date] = {
+      var wk = weekNumberForDate(e.date);
+      if (!map[wk]){
+        map[wk] = {
+          week: wk,
           date: e.date,
-          advance: false,
-          Sherie: { amount: 0, ids: [] },
-          Leigh: { amount: 0, ids: [] }
+          Sherie: { amount: 0, ids: [], date: null },
+          Leigh: { amount: 0, ids: [], date: null }
         };
-        order.push(e.date);
+        order.push(wk);
       }
-      var g = map[e.date];
-      if (!g[e.name]) g[e.name] = { amount: 0, ids: [] };
-      g[e.name].amount += e.amount;
-      g[e.name].ids.push(e.id);
-      if (e.advance) g.advance = true;
+      var g = map[wk];
+      if (e.date < g.date) g.date = e.date;
+      var p = g[e.name];
+      if (!p) return;
+      p.amount += e.amount;
+      p.ids.push(e.id);
+      if (!p.date || e.date < p.date) p.date = e.date;
     });
-    order.sort();
-    return order.map(function(d){ return map[d]; });
+    order.sort(function(a,b){ return a - b; });
+    return order.map(function(k){ return map[k]; });
   }
 
   function amountCell(part){
@@ -690,6 +696,13 @@ var firebaseConfig = {
       inner.appendChild(del);
 
       td.appendChild(inner);
+
+      if (part.date){
+        var cap = document.createElement('div');
+        cap.className = 'cell-date';
+        cap.textContent = shortDate(part.date);
+        td.appendChild(cap);
+      }
     } else {
       td.className = 'dim';
       td.textContent = '—';
@@ -700,27 +713,17 @@ var firebaseConfig = {
   function renderLedger(){
     var body = document.getElementById('ledger-body');
     body.innerHTML = '';
-    var rows = groupedByDate();
+    var rows = groupedByWeek();
 
     var running = 0;
-    rows.forEach(function(g, idx){
+    rows.forEach(function(g){
       running += g.Sherie.amount + g.Leigh.amount;
       var tr = document.createElement('tr');
 
       var thRow = document.createElement('th');
       thRow.className = 'row-head';
-      thRow.textContent = 'Week ' + weekNumberForDate(g.date);
+      thRow.textContent = 'Week ' + g.week;
       tr.appendChild(thRow);
-
-      var tdDate = document.createElement('td');
-      tdDate.textContent = shortDate(g.date);
-      if (g.advance){
-        var tag = document.createElement('span');
-        tag.className = 'advance-tag';
-        tag.textContent = ' (advance)';
-        tdDate.appendChild(tag);
-      }
-      tr.appendChild(tdDate);
 
       tr.appendChild(amountCell(g.Sherie));
       tr.appendChild(amountCell(g.Leigh));
@@ -1015,7 +1018,7 @@ var firebaseConfig = {
     input.addEventListener('keydown', function(e){
       if (e.key === 'Enter') attempt();
     });
-
+s
     var alreadyUnlocked = false;
     try { alreadyUnlocked = sessionStorage.getItem(UNLOCK_KEY) === '1'; } catch(e){}
     if (alreadyUnlocked){
